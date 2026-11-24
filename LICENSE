@@ -1,0 +1,14 @@
+Copyright (c) 2026 SHYGUY LLC. All rights reserved.
+
+The Qanary SDK for iOS is not open source. Its source is published so developers can read exactly what it records.
+
+SHYGUY LLC grants you a limited, non-exclusive, non-transferable license to include this SDK in your apps to run
+Qanary tests (https://qanaries.com). Don't modify it to collect more than it's designed to collect, and don't
+redistribute it except inside your apps. Any other use needs written permission from SHYGUY LLC.
+
+Use of the SDK is also subject to the Qanary terms: https://qanaries.com/terms
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL SHYGUY LLC BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
