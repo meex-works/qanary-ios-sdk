@@ -5,7 +5,7 @@ It measures how testers use your app during a Qanary test, which is what they're
 ranking is built from. For everyone else it does nothing: it records only after your app was opened from the Qanary
 app for a test.
 
-Swift, iOS 13 and later, no dependencies. The Android SDK is at [qanaries.com/developers/sdk](https://qanaries.com/developers/sdk).
+Swift, iOS 13 and later, no dependencies. The Android SDK is at [meex-works/qanary-android-sdk](https://github.com/meex-works/qanary-android-sdk).
 
 ## 1. Install
 
