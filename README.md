@@ -10,13 +10,13 @@ Swift, iOS 13 and later, no dependencies. The Android SDK is at [qanaries.com/de
 ## 1. Install
 
 In Xcode: **File → Add Package Dependencies…**, enter `https://github.com/meex-works/qanary-ios-sdk`, choose
-**Up to Next Major Version** from `0.1.0`, and add the **Qanary** library to your app target.
+**Up to Next Major Version** from `0.1.1`, and add the **Qanary** library to your app target.
 
 Or in `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/meex-works/qanary-ios-sdk", from: "0.1.0"),
+    .package(url: "https://github.com/meex-works/qanary-ios-sdk", from: "0.1.1"),
 ],
 targets: [
     .target(name: "MyApp", dependencies: [.product(name: "Qanary", package: "qanary-ios-sdk")]),
@@ -133,6 +133,10 @@ your build on an iPhone or the Simulator, open the link the console shows (on a 
 it; on the Simulator, `xcrun simctl openurl booted '<link>'`), and use the app for a few seconds. The check turns ✓
 and lists the screens it saw. It uses no paid slot and expires after a day.
 
+The check counts only for a build with your App Store app's bundle ID: the SDK (0.1.1 and later) sends
+`Bundle.main.bundleIdentifier` with every batch, and we compare it with the app behind the App Store link on your
+card. A build of another app, or an SDK older than 0.1.1, reports but doesn't verify; the console says why.
+
 Testers install your **App Store** version: Apple doesn't allow paid testers on TestFlight builds. So the SDK has to
 ship in the build that's live on the App Store.
 
@@ -146,8 +150,8 @@ To watch it work, set `Qanary.debug = true` before `start()` and filter Console 
   when you call `Qanary.stop()`. Your other users are never recorded.
 - **What:** screens viewed and time on each, rage taps (fast repeated taps in one spot), how many times each field was
   edited, cleared or abandoned (counts only), failed request status codes you report, crashes (the exception name or
-  signal and your app's top frame) and freezes, app in front or behind, the device model, iOS version and your app's
-  version.
+  signal and your app's top frame) and freezes, app in front or behind, the device model, iOS version, your app's
+  version and its bundle ID.
 - **Never:** text typed into fields, screenshots, contacts, location, the advertising identifier or any other
   identifier, or anything outside your app. Qanary's server refuses event data that tries to carry field contents.
 

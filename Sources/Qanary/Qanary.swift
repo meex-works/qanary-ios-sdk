@@ -24,7 +24,7 @@ import UIKit
 /// class names or names passed to `screen(_:)`; no screenshots, no identifiers, no location.
 public enum Qanary {
     /// Sent with every batch. The API tells an iPhone build from an Android one by the "ios-" prefix.
-    public static let sdkVersion = "ios-0.1.0"
+    public static let sdkVersion = "ios-0.1.1"
     public static let defaultEndpoint = URL(string: "https://api.qanaries.com")!
     /// Covers the longest test; a session older than this stops recording.
     static let sessionTTL: TimeInterval = 15 * 24 * 3600
@@ -43,7 +43,7 @@ public enum Qanary {
     /// opened from Qanary on an earlier launch; otherwise stays dormant. `endpoint` must be https (plain http is allowed
     /// only to localhost, for testing against a local API).
     public static func start(endpoint: URL = defaultEndpoint) {
-        Core.shared.start(endpoint: endpoint, foreground: AppState.isForeground, device: DeviceInfo.collect())
+        Core.shared.start(endpoint: endpoint, foreground: AppState.isForeground, device: DeviceInfo.collect(), appId: Bundle.main.bundleIdentifier)
         #if canImport(UIKit)
         AppState.observe()
         #endif
@@ -131,6 +131,8 @@ final class Core {
     private var started = false
     private var endpoint = Qanary.defaultEndpoint
     private var device: [String: Event.Value] = [:]
+    /// The app's bundle identifier, sent with every batch: the server matches it to the App Store app when you verify.
+    private var appId: String?
     private var session: Session?
     private var pendingToken: String?
     private var currentScreen: String?
@@ -142,7 +144,7 @@ final class Core {
 
     // MARK: lifecycle
 
-    func start(endpoint: URL, foreground: Bool, device: [String: Event.Value]) {
+    func start(endpoint: URL, foreground: Bool, device: [String: Event.Value], appId: String? = nil) {
         Clock.touch()
         queue.async { [self] in
             guard !started else { return Log.d("start() was already called") }
@@ -152,6 +154,7 @@ final class Core {
             started = true
             self.endpoint = endpoint
             self.device = device
+            self.appId = appId
             inForeground.set(foreground)
             store.prepare()
             let crash = CrashCapture.takePending(store.crashFile)
@@ -204,7 +207,7 @@ final class Core {
         store.save(state)
         // The queue's sequence reservations are saved before the numbers are used.
         let box = StateBox(state)
-        let q = EventQueue(token: token, file: store.eventsFile(for: token), startSeq: state.seqNext, transport: makeTransport(endpoint), queue: queue) { [weak self] next in
+        let q = EventQueue(token: token, file: store.eventsFile(for: token), startSeq: state.seqNext, appId: appId, transport: makeTransport(endpoint), queue: queue) { [weak self] next in
             box.state.seqNext = next
             self?.store.save(box.state)
         }

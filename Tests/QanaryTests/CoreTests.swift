@@ -47,13 +47,14 @@ final class CoreTests: XCTestCase {
     func testALinkStartsASessionAndTheNextLaunchResumesIt() {
         let t = FakeTransport()
         let c = core(t)
-        c.start(endpoint: endpoint, foreground: true, device: ["device": "iPhone16,1", "os": "ios", "osVersion": "26.5", "appVersion": "1.0", "sdkVersion": "ios-0.1.0"])
+        c.start(endpoint: endpoint, foreground: true, device: ["device": "iPhone16,1", "os": "ios", "osVersion": "26.5", "appVersion": "1.0", "sdkVersion": "ios-0.1.1"], appId: "com.example.mealpal")
         c.screen("Home", t: 5)
         c.take(token, foreground: true)
         c.take(token, foreground: true)   // the same link again: still one session
         settle(c)
         XCTAssertTrue(c.recording.get)
         XCTAssertEqual(sentTypes(t), ["session_start", "screen_view"], "the screen already in front is named at once")
+        XCTAssertEqual(t.bodies[0]["appId"] as? String, "com.example.mealpal", "every batch says which app it's in")
         let start = (t.events(0)[0]["data"] as? [String: Any]) ?? [:]
         XCTAssertEqual(start["os"] as? String, "ios")
         XCTAssertEqual(start["device"] as? String, "iPhone16,1")

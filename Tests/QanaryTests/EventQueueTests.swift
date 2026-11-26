@@ -33,8 +33,8 @@ final class EventQueueTests: XCTestCase {
 
     override func tearDown() { try? FileManager.default.removeItem(at: dir) }
 
-    private func queue(_ t: FakeTransport, startSeq: Int = 0, reserved: ((Int) -> Void)? = nil) -> EventQueue {
-        q.sync { EventQueue(token: token, file: dir.appendingPathComponent("events.jsonl"), startSeq: startSeq, transport: t, queue: q, reserve: reserved ?? { _ in }) }
+    private func queue(_ t: FakeTransport, startSeq: Int = 0, appId: String? = "com.example.mealpal", reserved: ((Int) -> Void)? = nil) -> EventQueue {
+        q.sync { EventQueue(token: token, file: dir.appendingPathComponent("events.jsonl"), startSeq: startSeq, appId: appId, transport: t, queue: q, reserve: reserved ?? { _ in }) }
     }
 
     private func flush(_ e: EventQueue) -> EventQueue.Outcome {
@@ -56,7 +56,8 @@ final class EventQueueTests: XCTestCase {
         XCTAssertEqual(flush(e), .sent)
         XCTAssertEqual(t.posts, 1)
         XCTAssertEqual(t.bodies[0]["sessionToken"] as? String, token)
-        XCTAssertEqual(t.bodies[0]["sdkVersion"] as? String, "ios-0.1.0")
+        XCTAssertEqual(t.bodies[0]["sdkVersion"] as? String, "ios-0.1.1")
+        XCTAssertEqual(t.bodies[0]["appId"] as? String, "com.example.mealpal", "the app it's in, for the verify check")
         let ev = t.events(0)
         XCTAssertEqual(ev.map { $0["seq"] as? Int }, [0, 1, 2])
         XCTAssertEqual(ev.map { $0["t"] as? Int }, [0, 120, 10_000])
@@ -67,6 +68,14 @@ final class EventQueueTests: XCTestCase {
         XCTAssertEqual((ev[0]["data"] as? [String: Any])?["resumed"] as? Bool, false)
         XCTAssertEqual(q.sync { e.count }, 0)
         XCTAssertFalse(FileManager.default.fileExists(atPath: e.file.path), "nothing left to keep on disk")
+    }
+
+    func testNoAppIdKeyWhenItIsUnknown() {
+        let t = FakeTransport()
+        let e = queue(t, appId: nil)
+        q.sync { _ = e.add("heartbeat", t: 1) }
+        XCTAssertEqual(flush(e), .sent)
+        XCTAssertNil(t.bodies[0]["appId"])
     }
 
     func testEventsSurviveAKill() {

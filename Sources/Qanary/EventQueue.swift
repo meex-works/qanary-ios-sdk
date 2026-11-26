@@ -43,6 +43,8 @@ final class EventQueue {
 
     let token: String
     let file: URL
+    /// The app's bundle identifier (sent as `appId`): the server verifies a check only for the App Store app's own build.
+    let appId: String?
     private let queue: DispatchQueue
     private let transport: Transport
     private let reserve: (Int) -> Void
@@ -57,9 +59,10 @@ final class EventQueue {
     /// The server said this session is over (410, or 404: no such session).
     var onFinished: (() -> Void)?
 
-    init(token: String, file: URL, startSeq: Int, transport: Transport, queue: DispatchQueue, reserve: @escaping (Int) -> Void) {
+    init(token: String, file: URL, startSeq: Int, appId: String? = nil, transport: Transport, queue: DispatchQueue, reserve: @escaping (Int) -> Void) {
         self.token = token
         self.file = file
+        self.appId = appId
         self.transport = transport
         self.queue = queue
         self.reserve = reserve
@@ -109,7 +112,7 @@ final class EventQueue {
         guard !stopped else { return notify(.finished) }
         guard !pending.isEmpty else { return notify(.idle) }
         let batch = Array(pending.prefix(EventQueue.maxBatch))
-        guard let body = try? encoder.encode(Batch(sessionToken: token, sdkVersion: Qanary.sdkVersion, events: batch)) else {
+        guard let body = try? encoder.encode(Batch(sessionToken: token, sdkVersion: Qanary.sdkVersion, appId: appId, events: batch)) else {
             pending.removeFirst(batch.count)
             rewrite()
             return notify(.refused(0))
@@ -183,9 +186,11 @@ final class EventQueue {
         try? out.write(to: file, options: .atomic)
     }
 
+    /// `appId` is left out when unknown (synthesized Encodable skips a nil optional).
     private struct Batch: Encodable {
         let sessionToken: String
         let sdkVersion: String
+        let appId: String?
         let events: [Event]
     }
 }
